@@ -35,13 +35,11 @@ io.on("connection", (socket) => {
     sendMembers(room);
   });
 
-  // Messages arrive already encrypted. The server can't read them, it just passes them on.
-  socket.on("message", (data) => {
+  socket.on("message", (text) => {
     const { username, room } = socket.data;
-    if (!room || !data) return;
-    const { iv, ct } = data;
-    if (typeof iv !== "string" || typeof ct !== "string" || iv.length > 32 || ct.length > 8000) return;
-    io.to(room).emit("message", { username, data: { iv, ct }, time: Date.now() });
+    text = String(text || "").trim().slice(0, 1000);
+    if (!room || !text) return;
+    io.to(room).emit("message", { username, text, time: Date.now() });
   });
 
   socket.on("disconnect", () => {

@@ -1,19 +1,12 @@
 const socket = io();
 const $ = (id) => document.getElementById(id);
 let me = "";
-let key = null; // the room's encryption key, only ever kept in this browser
 
 // 1. Login: send username + room to the server
-$("login").addEventListener("submit", async (e) => {
+$("login").addEventListener("submit", (e) => {
   e.preventDefault(); // stop the page reloading
   const username = $("username").value.trim();
   const room = $("room").value.trim();
-  const password = $("password").value;
-
-  if (!window.crypto?.subtle) {
-    return ($("error").textContent = "Encryption needs HTTPS (or localhost). See the setup notes.");
-  }
-  key = await deriveKey(password, room); // the password itself is never sent
 
   socket.emit("join", { username, room }, (res) => {
     if (!res.ok) return ($("error").textContent = res.error);
@@ -26,11 +19,11 @@ $("login").addEventListener("submit", async (e) => {
 });
 
 // 2. Sending messages
-$("send").addEventListener("submit", async (e) => {
+$("send").addEventListener("submit", (e) => {
   e.preventDefault();
   const text = $("text").value.trim();
+  if (text) socket.emit("message", text);
   $("text").value = "";
-  if (text) socket.emit("message", await encryptText(key, text));
 });
 
 $("leave").addEventListener("click", () => location.reload());
@@ -47,15 +40,8 @@ socket.on("members", (list) => {
 
 socket.on("system", (text) => addLine(text, "system"));
 
-socket.on("message", async ({ username, data, time }) => {
-  let text, locked = false;
-  try {
-    text = await decryptText(key, data);
-  } catch {
-    text = "🔒 Can't decrypt this message (different room password?)";
-    locked = true;
-  }
-  const div = addLine("", (username === me ? "msg mine" : "msg") + (locked ? " locked" : ""));
+socket.on("message", ({ username, text, time }) => {
+  const div = addLine("", username === me ? "msg mine" : "msg");
   const who = document.createElement("small");
   who.textContent = `${username} · ${new Date(time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
   const body = document.createElement("div");
