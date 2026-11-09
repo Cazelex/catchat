@@ -1,0 +1,44 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; display: grid; place-items: center;
+  background: #0f0b17; color: #e9d5ff;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+[hidden] { display: none !important; }
+
+.card {
+  width: min(380px, 92vw); padding: 32px; border: 1px solid #2e2442;
+  background: #16111f; border-radius: 10px; display: flex; flex-direction: column; gap: 6px;
+}
+h1 { margin: 0; font-size: 28px; color: #c084fc; }
+.hint { color: #8b7aa8; font-size: 12px; margin: 4px 0 18px; }
+label { font-size: 10px; letter-spacing: 1px; color: #8b7aa8; margin-top: 10px; }
+input {
+  background: #0f0b17; border: 1px solid #2e2442; color: #e9d5ff;
+  padding: 10px 12px; border-radius: 6px; font: inherit;
+}
+input:focus { outline: none; border-color: #a855f7; }
+button {
+  background: #a855f7; color: #0f0b17; border: 0; padding: 11px; border-radius: 6px;
+  font: inherit; font-weight: 700; cursor: pointer;
+}
+button:hover { background: #c084fc; }
+.error { color: #f87171; font-size: 12px; min-height: 1em; margin: 8px 0 0; }
+
+#chat { width: 100vw; height: 100vh; display: flex; }
+aside { width: 200px; border-right: 1px solid #2e2442; padding: 16px; display: flex; flex-direction: column; }
+.room { color: #c084fc; margin-bottom: 20px; }
+.label { font-size: 10px; color: #8b7aa8; letter-spacing: 1px; }
+#members { list-style: none; padding: 0; flex: 1; }
+#members li::before { content: "● "; color: #4ade80; }
+#leave { background: transparent; color: #8b7aa8; border: 1px solid #2e2442; }
+main { flex: 1; display: flex; flex-direction: column; }
+#messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.system { align-self: center; font-size: 11px; color: #8b7aa8; border: 1px solid #2e2442; padding: 3px 10px; border-radius: 99px; }
+.msg { max-width: 70%; background: #221a30; padding: 8px 12px; border-radius: 8px; }
+.msg.mine { align-self: flex-end; background: #7c3aed; }
+.msg small { display: block; font-size: 10px; opacity: .7; margin-bottom: 2px; }
+#send { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #2e2442; }
+#send input { flex: 1; }
+#send button { width: 48px; }
+@media (max-width: 600px) { aside { display: none; } }
