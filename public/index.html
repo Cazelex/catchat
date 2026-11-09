@@ -16,13 +16,13 @@
     <!-- Screen 1: login -->
     <form id="login" class="card">
         <h1>[ CatChat ]</h1>
-        <p class="hint">Enter a room code. Anyone with the same code joins the same room.</p>
+        <p class="hint">Enter a room code. Anyone with the same code joins the same room. Messages are end-to-end encrypted with the code, so use a long one.</p>
 
         <label for="username">USERNAME</label>
         <input id="username" maxlength="20" placeholder="e.g. Mr. Robot" autocomplete="off" required>
 
         <label for="room">ROOM CODE</label>
-        <input id="room" maxlength="30" placeholder="e.g. 1234" autocomplete="off" required>
+        <input id="room" maxlength="100" placeholder="e.g. amber-otter-nebula-7391" autocomplete="off" required>
 
         <p id="error" class="error"></p>
         <button type="submit">CONNECT →</button>
@@ -32,6 +32,7 @@
     <div id="chat" hidden>
         <aside>
             <div class="room">ROOM // <span id="room-name"></span></div>
+            <div class="e2e">🔒 end-to-end encrypted</div>
             <div class="label">MEMBERS</div>
             <ul id="members"></ul>
             <button id="leave">← Leave room</button>
@@ -46,6 +47,7 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/crypto.js"></script>
     <script src="/js/app.js"></script>
 </body>
 </html>

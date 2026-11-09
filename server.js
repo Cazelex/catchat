@@ -9,7 +9,8 @@ const PORT = 3000;
 
 app.use(express.static("public"));
 
-// Who is in each room: { "1234": Set(["Mario", "Mr. Robot"]) }
+// Who is in each room. Rooms are named by a SHA-256 fingerprint of the room code,
+// so the server never learns the real code: { "9f86d0…": Set(["Mario", "Mr. Robot"]) }
 const rooms = new Map();
 
 function sendMembers(room) {
@@ -19,8 +20,9 @@ function sendMembers(room) {
 io.on("connection", (socket) => {
   socket.on("join", ({ username, room }, reply) => {
     username = String(username || "").trim().slice(0, 20);
-    room = String(room || "").trim().slice(0, 30);
-    if (!username || !room) return reply({ ok: false, error: "Username and room code are required" });
+    room = String(room || "");
+    if (!username) return reply({ ok: false, error: "Username is required" });
+    if (!/^[0-9a-f]{64}$/.test(room)) return reply({ ok: false, error: "Invalid room" });
 
     if (!rooms.has(room)) rooms.set(room, new Set());
     if (rooms.get(room).has(username)) return reply({ ok: false, error: "That username is taken in this room" });
@@ -35,11 +37,13 @@ io.on("connection", (socket) => {
     sendMembers(room);
   });
 
-  socket.on("message", (text) => {
+  // Messages arrive already encrypted. The server can't read them, it just passes them on.
+  socket.on("message", (data) => {
     const { username, room } = socket.data;
-    text = String(text || "").trim().slice(0, 1000);
-    if (!room || !text) return;
-    io.to(room).emit("message", { username, text, time: Date.now() });
+    if (!room || !data) return;
+    const { iv, ct } = data;
+    if (typeof iv !== "string" || typeof ct !== "string" || iv.length > 32 || ct.length > 8000) return;
+    io.to(room).emit("message", { username, data: { iv, ct }, time: Date.now() });
   });
 
   socket.on("disconnect", () => {
