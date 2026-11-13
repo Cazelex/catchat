@@ -41,3 +41,14 @@ async function decryptText(key, { iv, ct }) {
   const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: fromB64(iv) }, key, fromB64(ct));
   return dec.decode(pt);
 }
+
+// Files: same AES-GCM key, but working on raw bytes instead of text
+async function encryptBytes(key, bytes) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, bytes);
+  return { iv: toB64(iv), ct }; // ct stays binary (ArrayBuffer), Socket.IO sends it as-is
+}
+
+async function decryptBytes(key, iv, ct) {
+  return crypto.subtle.decrypt({ name: "AES-GCM", iv: fromB64(iv) }, key, ct);
+}

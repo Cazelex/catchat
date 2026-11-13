@@ -46,6 +46,25 @@ io.on("connection", (socket) => {
     io.to(room).emit("message", { username, data: { iv, ct }, time: Date.now() });
   });
 
+  // Encrypted file chunks. The server checks sizes, then passes them on.
+  // Nothing is saved: each chunk is forwarded and forgotten.
+  const MAX_CHUNKS = 41; // 20 MB / 512 KB, plus one spare
+  socket.on("file-chunk", (chunk, ack) => {
+    const { username, room } = socket.data;
+    if (!room || !chunk || typeof ack !== "function") return;
+    const { id, index, total, iv, ct, meta } = chunk;
+    const ok =
+      typeof id === "string" && id.length <= 64 &&
+      Number.isInteger(total) && total >= 1 && total <= MAX_CHUNKS &&
+      Number.isInteger(index) && index >= 0 && index < total &&
+      typeof iv === "string" && iv.length <= 32 &&
+      Buffer.isBuffer(ct) && ct.length <= 512 * 1024 + 64 &&
+      (meta === null || (typeof meta?.iv === "string" && typeof meta?.ct === "string" && meta.ct.length <= 2000));
+    if (!ok) return ack();
+    socket.to(room).emit("file-chunk", { username, id, index, total, iv, ct, meta });
+    ack(); // tells the sender "got it, send the next one"
+  });
+
   socket.on("disconnect", () => {
     const { username, room } = socket.data;
     if (!room) return;
